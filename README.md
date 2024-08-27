@@ -14,3 +14,4 @@
 - google search "rag ai wikipedia"
 - https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/
 - https://en.wikipedia.org/wiki/Retrieval-augmented_generation
+- https://towardsdatascience.com/what-nobody-tells-you-about-rags-b35f017e1570
