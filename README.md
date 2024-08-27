@@ -1,5 +1,8 @@
 # Retrieval-Augumented Generation for LLMs
-
+## Business Features
+- F1: Give the LLM external tool access
+- F2: Customize the LLM with local data
+- 
 ## Experimentation
 - following 
 - "Augumenting Your LLM using Retrieval Augumented Generation" https://learn.nvidia.com/courses/course-detail?course_id=course-v1:DLI+S-FX-16+V1
