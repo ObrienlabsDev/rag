@@ -12,14 +12,14 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-os.environ["OPENAI_API_KEY"] = "sk-p..."
+
 #getpass.getpass()
 
 llm = ChatOpenAI(model="gpt-4o-mini")
 
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
-
-os.environ["LANGCHAIN_API_KEY"] = "lsv..."
+#os.environ["OPENAI_API_KEY"] = "sk-p..."
+#os.environ["LANGCHAIN_API_KEY"] = "lsv..."
 #getpass.getpass()
 
 # Load, chunk and index the contents of the blog.
@@ -36,7 +36,6 @@ docs = loader.load()
 print(f"docs content size: %s" % (len(docs[0].page_content)))
 print(docs[0].page_content[:500])
 
-
 text_splitter = RecursiveCharacterTextSplitter(
    chunk_size=1000, chunk_overlap=200) #  add_start_index=True
 splits = text_splitter.split_documents(docs)
@@ -46,16 +45,27 @@ print(f"metadata: %s" % (len(splits[10].metadata)))
 
 vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
 
+  # Retrieve and generate using the relevant snippets of the blog.
+#retriever = vectorstore.as_retriever() # default simularity, 4
+retriever = vectorstore.as_retriever(search_type="similarity", 
+                                     search_kwargs={"k": 6})
+
+print (f"retriever: %s" % (retriever))
+retrieved_docs = retriever.invoke("What are the approaches to Task Decomposition?")
+print(f"vectorstore retrieved: %s" % (len(retrieved_docs)))
+print(f"vectorstore retrieved content: %s" % (retrieved_docs[0].page_content))
+
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-  # Retrieve and generate using the relevant snippets of the blog.
-retriever = vectorstore.as_retriever() # search_type="similarity", search_kwargs={"k": 6}
-
-print ("test")
-#def skip():
-
 prompt = hub.pull("rlm/rag-prompt")
+
+example_messages = prompt.invoke(
+    {"context": "filler context", "question": "filler question"}
+).to_messages()
+#example_messages
+print(f"example_messages: %s" % (example_messages[0].content))
+
 rag_chain = (
   {"context": retriever | format_docs, "question": RunnablePassthrough()}
    | prompt
@@ -63,6 +73,9 @@ rag_chain = (
    | StrOutputParser()
   )
 
+#for chunk in rag_chain.stream("What is Task Decomposition?"):
+#    print(chunk, end="", flush=True)
+
 retrieved = rag_chain.invoke("What is Task Decomposition?")
-print(f"retrieved: %s" % (len(retrieved)))
-print(f"retrieved content: %s" % (retrieved))#[0].page_content))
+print(f"rag_chain retrieved: %s" % (len(retrieved)))
+print(f"rag_chain retrieved content: %s" % (retrieved))#[0].page_content))
