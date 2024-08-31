@@ -11,71 +11,87 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+import logging
 
+logging.basicConfig(level=logging.INFO)
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
-#getpass.getpass()
+def set_environment_variables():
+    os.environ["OPENAI_API_KEY"] = ""
+    os.environ["LANGCHAIN_API_KEY"] = ""
 
-llm = ChatOpenAI(model="gpt-4o-mini")
+def initialize_llm():
+    return ChatOpenAI(model="gpt-4o-mini")
 
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-#os.environ["OPENAI_API_KEY"] = "sk-p..."
-#os.environ["LANGCHAIN_API_KEY"] = "lsv..."
-#getpass.getpass()
+def load_documents():
+    loader = WebBaseLoader(
+        web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+        bs_kwargs=dict(
+            parse_only=bs4.SoupStrainer(
+                class_=("post-content", "post-title", "post-header")
+            )
+        ),
+    )
+    return loader.load()
 
-# Load, chunk and index the contents of the blog.
-loader = WebBaseLoader(
-    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
-    bs_kwargs=dict(
-        parse_only=bs4.SoupStrainer(
-            class_=("post-content", "post-title", "post-header")
-        )
-    ),
-)
-docs = loader.load()
+def split_documents(docs):
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000, chunk_overlap=200
+    )
+    return text_splitter.split_documents(docs)
 
-print(f"docs content size: %s" % (len(docs[0].page_content)))
-print(docs[0].page_content[:500])
+def create_vectorstore(splits):
+    return Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
 
-text_splitter = RecursiveCharacterTextSplitter(
-   chunk_size=1000, chunk_overlap=200) #  add_start_index=True
-splits = text_splitter.split_documents(docs)
-print(f"splits: %s" % (len(splits)))
-print(f"page_content: %s" % (len(splits[0].page_content)))
-print(f"metadata: %s" % (len(splits[10].metadata)))
-
-vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
-
-  # Retrieve and generate using the relevant snippets of the blog.
-#retriever = vectorstore.as_retriever() # default simularity, 4
-retriever = vectorstore.as_retriever(search_type="similarity", 
-                                     search_kwargs={"k": 6})
-
-print (f"retriever: %s" % (retriever))
-retrieved_docs = retriever.invoke("What are the approaches to Task Decomposition?")
-print(f"vectorstore retrieved: %s" % (len(retrieved_docs)))
-print(f"vectorstore retrieved content: %s" % (retrieved_docs[0].page_content))
+def retrieve_documents(vectorstore, query, k=6):
+    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": k})
+    return retriever.invoke(query)
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-prompt = hub.pull("rlm/rag-prompt")
+def main():
+    set_environment_variables()
+    llm = initialize_llm()
 
-example_messages = prompt.invoke(
-    {"context": "filler context", "question": "filler question"}
-).to_messages()
-#example_messages
-print(f"example_messages: %s" % (example_messages[0].content))
+    try:
+        docs = load_documents()
+        logging.info(f"Docs content size: {len(docs[0].page_content)}")
+        logging.info(docs[0].page_content[:500])
 
-rag_chain = (
-  {"context": retriever | format_docs, "question": RunnablePassthrough()}
-   | prompt
-   | llm
-   | StrOutputParser()
-  )
+        splits = split_documents(docs)
+        logging.info(f"Splits: {len(splits)}")
+        logging.info(f"Page content size: {len(splits[0].page_content)}")
+        logging.info(f"Metadata size: {len(splits[10].metadata)}")
 
-#for chunk in rag_chain.stream("What is Task Decomposition?"):
-#    print(chunk, end="", flush=True)
+        vectorstore = create_vectorstore(splits)
+        retrieved_docs = retrieve_documents(vectorstore, "What are the approaches to Task Decomposition?")
+        logging.info(f"Vectorstore retrieved: {len(retrieved_docs)}")
 
-retrieved = rag_chain.invoke("What is Task Decomposition?")
-print(f"rag_chain retrieved: %s" % (len(retrieved)))
-print(f"rag_chain retrieved content: %s" % (retrieved))#[0].page_content))
+        prompt = hub.pull("rlm/rag-prompt")
+        example_messages = prompt.invoke(
+            {"context": "filler context", "question": "filler question"}
+        ).to_messages()
+        logging.info(f"Example messages: {example_messages[0].content}")
+
+        # retriever needs to be moved up from function scope
+        rag_chain = (
+            {"context": retriever | format_docs, "question": RunnablePassthrough()}
+            | prompt
+            | llm
+            | StrOutputParser()
+        )
+
+        # Uncomment to use the RAG chain
+        # for chunk in rag_chain.stream("What is Task Decomposition?"):
+        #     logging.info(chunk)
+        retrieved = rag_chain.invoke("What is Task Decomposition?")
+        logging.info(f"rag_chain retrieved: {len(retrieved)}")
+        logging.info(f"rag_chain retrieved content: {retrieved}")
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    main()
