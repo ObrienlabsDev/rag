@@ -1,6 +1,6 @@
 Disclaimer: this file contains LLM generated text from the 20250213 version of OpenAI o1 Pro under "Deep Research" mode
 
-# Revisitng DevOps Agent via RAG approach
+# Revisiting DevOps Agent via RAG approach
 - see https://github.com/ObrienlabsDev/rag/issues/7
 
 ## 20250213: Query OpenAI o1 Pro - Deep Research
