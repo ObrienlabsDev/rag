@@ -1,4 +1,4 @@
-# Retrieval-Augumented Generation for LLMs
+# Retrieval-Augmented Generation for LLMs
 ## Business Features
 - F1: Give the LLM external tool access
 - F2: Customize the LLM with local data
