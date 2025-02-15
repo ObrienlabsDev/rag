@@ -13,7 +13,8 @@
 
 # Documentation
 - https://github.com/ObrienlabsDev/blog/issues/47
-- 2020 papar on RAG from Patrick Lewis - https://arxiv.org/pdf/2005.11401
+- 2020 paper on RAG from Patrick Lewis - https://arxiv.org/pdf/2005.11401
+- 2024 paper on "Retrieval-Augmented Generation for Large Language Models: A Survey" https://arxiv.org/pdf/2312.10997
 - google search "rag ai wikipedia"
 - https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/
 - https://en.wikipedia.org/wiki/Retrieval-augmented_generation
