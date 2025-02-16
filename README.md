@@ -3,6 +3,7 @@
 - F1: Give the LLM external tool access
 - F2: Customize the LLM with local data
 - F3: Implement chat based memory - https://github.com/ObrienlabsDev/rag/issues/4
+- 
 ## Experimentation
 - following 
 - "Augumenting Your LLM using Retrieval Augumented Generation" https://learn.nvidia.com/courses/course-detail?course_id=course-v1:DLI+S-FX-16+V1
@@ -13,6 +14,8 @@
 
 # Documentation
 - https://github.com/ObrienlabsDev/blog/issues/47
+- 2020 paper where RAG as a term was introduced by Patrick Lewis et al. https://arxiv.org/abs/2005.11401
+- 2017 paper outlining retrieval/generation via [Wikipedia](https://en.wikipedia.org/wiki/User:Obrienlabs) from Chen et al. https://arxiv.org/abs/1704.00051
 - 2020 paper on RAG from Patrick Lewis - https://arxiv.org/pdf/2005.11401
 - 2024 paper on "Retrieval-Augmented Generation for Large Language Models: A Survey" https://arxiv.org/pdf/2312.10997
 - google search "rag ai wikipedia"
@@ -20,3 +23,4 @@
 - https://en.wikipedia.org/wiki/Retrieval-augmented_generation
 - https://towardsdatascience.com/what-nobody-tells-you-about-rags-b35f017e1570
 - https://alexgarcia.xyz/blog/2024/sqlite-vec-stable-release/index.html
+- book: AI Engineering by Chip Huyen Jan 2025
