@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama AI Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        input, button {
+            font-size: 16px;
+            padding: 10px;
+            margin: 10px;
+            width: 80%;
+        }
+        .chat-container {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-top: 20px;
+            height: 300px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .user-message {
+            background-color: #0084ff;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 5px;
+            max-width: 80%;
+            align-self: flex-end;
+        }
+        .bot-message {
+            background-color: #e5e5ea;
+            color: black;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 5px;
+            max-width: 80%;
+            align-self: flex-start;
+        }
+        .message-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <h2>Ollama AI Chat</h2>
+    <input type="text" id="userPrompt" placeholder="Ask something..." />
+    <button onclick="sendRequest()">Send</button>
+    
+    <div class="chat-container" id="chatOutput">
+        <p><i>Chat output will appear here...</i></p>
+    </div>
+
+    <script>
+        async function sendRequest() {
+            const prompt = document.getElementById("userPrompt").value;
+            if (!prompt) {
+                alert("Please enter a question!");
+                return;
+            }
+
+            const url = "http://192.168.0.203:11434/api/generate";
+            const requestData = {
+                model: "deepseek-r1:70b",
+                prompt: prompt,
+                stream: false
+            };
+
+            // Add user message to chat UI
+            addMessage(prompt, "user");
+
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const responseData = await response.json();
+                const botResponse = responseData.response;
+
+                // Add bot response to chat UI
+                addMessage(botResponse, "bot");
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                addMessage("Error fetching response from server.", "bot");
+            }
+        }
+
+        function addMessage(text, sender) {
+            const chatContainer = document.getElementById("chatOutput");
+            if (chatContainer.innerHTML.includes("Chat output will appear here")) {
+                chatContainer.innerHTML = ""; // Clear default text on first message
+            }
+
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message-container");
+            const message = document.createElement("div");
+            message.classList.add(sender === "user" ? "user-message" : "bot-message");
+            message.innerText = text;
+            messageDiv.appendChild(message);
+            chatContainer.appendChild(messageDiv);
+
+            // Scroll to latest message
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
+
