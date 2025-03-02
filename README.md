@@ -24,3 +24,6 @@
 - https://towardsdatascience.com/what-nobody-tells-you-about-rags-b35f017e1570
 - https://alexgarcia.xyz/blog/2024/sqlite-vec-stable-release/index.html
 - book: AI Engineering by Chip Huyen Jan 2025
+
+# Alternatives to RAG
+- Long term memory - revisting memorization - https://github.com/ObrienlabsDev/rag/issues/10
